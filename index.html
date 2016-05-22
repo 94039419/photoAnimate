@@ -1,0 +1,186 @@
+2<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href='css/indexCss.css' />
+<title>超炫哦</title>
+</head>
+
+<body>
+	<div class="wrap" id="wrap"> 
+    	<div class="photo photo_position_front" id="photo_{{index}}" onclick="rotate3D(this)">
+        	<div class="photo_3D">
+                <div class="photo_side photo_front">
+                    <p class="pf_p1"><img src="img/{{index}}.JPG" /></p>
+                    <p class="pf_p2">{{caption}}</p>
+                </div>
+                <div class="photo_side photo_back">
+                    <p>{{des}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+	<script>
+		window.onload=function(){
+			var x =randomNum([0,imgData.length])			//(-4)
+			centerPos(x);									//(-5)
+			range();										//(-6)
+		}	
+	
+	
+		function g(id){														//定义通用函数   (1)
+			if(id.substr(0,1)=="."){
+				return document.getElementsByClassName(id.substr(1));
+			}
+			return document.getElementById(id);
+		}
+		 
+		var imgData=[{img:1,caption:"第1张标题",des:"第1张内容"},							//定义数据		(2)
+					{img:2,caption:"第2张标题",des:"第2张内容"},
+					{img:3,caption:"第3张标题",des:"第3张内容"},
+					{img:4,caption:"第4张标题",des:"第4张内容"},
+					{img:5,caption:"第5张标题",des:"第5张内容"},
+					{img:6,caption:"第6张标题",des:"第6张内容"},
+					{img:7,caption:"第7张标题",des:"第7张内容"},
+					{img:8,caption:"第8张标题",des:"第8张内容"},						
+					{img:9,caption:"第9张标题",des:"第9张内容"},
+					{img:10,caption:"第10张标题",des:"第10张内容"},
+					{img:11,caption:"第11张标题",des:"第11张内容"},
+					{img:12,caption:"第12张标题",des:"第12张内容"}
+		]
+		
+		var content=g("wrap").innerHTML;
+		var photoArr=[];
+		var iconArr=[];
+		var _icon_div=document.createElement("div");
+		for(i in imgData){																//利用模板进行数据输入   （3）
+			var myI=i
+			
+			var _content=	content.replace(/{{index}}/g,imgData[i].img).
+							replace(/{{caption}}/g,imgData[i].caption).
+							replace(/{{des}}/g,imgData[i].des);
+			iconArr.push('<span id="icon_'+(++myI)+'" class="icon_span" onclick="rotate3D(g(\'photo_'+(myI++)+'\'))"></span>');
+			photoArr.push(_content);
+		}
+		g("wrap").innerHTML=photoArr.join(" ");
+		g("wrap").innerHTML+="<div class='icon_div' id='icon_div'></div>";
+		g("icon_div").innerHTML+=iconArr.join(" ");
+
+		
+		function randomNum(arr){									//产生随机数，用在中间位置图片的显示，以及其他位置的随机排序（4）
+			var numMax=Math.max(arr[0],arr[1]),
+				numMin=Math.min(arr[0],arr[1]);
+				
+			var chazhi=numMax-numMin;
+			return Math.ceil(Math.random()*chazhi+numMin);
+		}
+
+		
+		function centerPos(n){															//某张图片定位到中间位置  （5）
+			var _photo=g(".photo");											
+			var pho_lenght=  _photo.length;
+			var photosArr=[];
+			
+			for(var i=0;i<pho_lenght;i++){
+				_photo[i].className=_photo[i].className.replace(/photo_current/," ");
+				 photosArr.push(_photo[i]);
+			}
+			photosArr.splice(n-1,1);															//定义图层左右两边的位置
+			var photosLeftArr=photosArr.slice(0,Math.ceil(photosArr.length/2)),
+				photosrightArr=photosArr.slice(Math.ceil(photosArr.length/2),photosArr.length);
+			
+			var ranges=range();																//获得range行数的对象属性
+	
+			for(s in photosLeftArr){
+				photosLeftArr[s].style.left=randomNum(ranges.left.x)+"px";			//照片left和top值得随机数，源自“range”函数
+				photosLeftArr[s].style.top=randomNum(ranges.left.y)+"px";
+				photosLeftArr[s].style["-webkit-transform"]="rotate("+randomNum([-360,360])+"deg)";
+				photosLeftArr[s].style["-moz-transform"]="rotate("+randomNum([-360,360])+"deg)";
+			}
+			
+			for(i in photosrightArr){
+				photosrightArr[i].style.left=randomNum(ranges.right.x)+"px";			//照片left和top值得随机数，源自“range”函数
+				photosrightArr[i].style.top=randomNum(ranges.right.y)+"px";
+				photosrightArr[i].style["-webkit-transform"]="rotate("+randomNum([-360,360])+"deg)";
+				photosrightArr[i].style["-moz-transform"]="rotate("+randomNum([-360,360])+"deg)";
+			}
+			
+			g("photo_"+n).className=" ";
+			g("photo_"+n).className="photo photo_position_front photo_current";
+			g("photo_"+n).style.left="50%";
+			g("photo_"+n).style.top="50%";
+			g("photo_"+n).style["-webkit-transform"]="rotate(0deg)";
+			g("photo_"+n).style["-moz-transform"]="rotate(0deg)";
+			g("photo_"+n).style["-webkit-transform"]="scale(1.5)";
+			g("photo_"+n).style["-moz-transform"]="scale(1.5)";
+			
+			g("icon_"+n).className+=" icon_current";
+			
+		}
+		
+		
+		
+		function range(){													//定义左右两边，x和y的最大最小值的对象	(6)
+			var _range={
+				left:{x:[],y:[]},
+				right:{x:[],y:[]}	
+			}
+			
+			var _wrap={
+				w:g("wrap").clientWidth,
+				h:g("wrap").clientHeight	
+			}
+			
+			var _photo={
+				w:g(".photo")[0].clientWidth,
+				h:g(".photo")[0].clientHeight	
+			}
+			
+			_range.left.x=[-_photo.w,_wrap.w/2-_photo.w-_photo.w/2];
+			_range.left.y=[-_photo.h,_wrap.h];
+			
+			_range.right.x=[_wrap.w/2+_photo.w/2,_wrap.w];
+			_range.right.y=[-_photo.h,_wrap.h];
+			
+			return _range;
+
+		}
+		
+		
+		function rotate3D(ele){												//制作点击单个图片进行反转的动画 (7)
+			var eleClassNameStr= ele.className;	
+			var eleId= ele.id.split("_")[1];
+			var spans=g(".icon_span");
+			for(var i=0;i<spans.length;i++){								//在按钮点击之前，先去除所有的class样式
+				spans[i].className="icon_span";
+			}
+			
+			if(!/photo_current/.test(eleClassNameStr)){
+			   return centerPos(eleId);						//如果点击的不是当前的照片，那就重新排序,记住return的重要性，不再执行下边代码
+			}
+			
+			
+			if(/photo_position_front/.test(eleClassNameStr)){
+				eleClassNameStr=eleClassNameStr.replace(/photo_position_front/,"photo_position_back");
+				
+			
+				
+				g("icon_"+eleId).className=g("icon_"+eleId).className.replace(/icon_current/," ");
+				g("icon_"+eleId).className+=" icon_back";
+				
+				
+			}else{
+				eleClassNameStr=eleClassNameStr.replace(/photo_position_back/,"photo_position_front");
+			
+				g("icon_"+eleId).className=g("icon_"+eleId).className.replace(/icon_back/," ");
+				g("icon_"+eleId).className+=" icon_current";
+			}
+			return ele.className=eleClassNameStr;
+		
+		
+		}
+		
+		
+    </script>
+</body>
+</html>
